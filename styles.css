@@ -1,69 +1,39 @@
 /* =========================================
-   VARIABLES & RESET
+   VARIABLES & SETUP
    ========================================= */
 :root {
-    /* Light Mode (Default) */
-    --bg-color: #f5f5f7; /* Off-white Apple style */
-    --text-color: #1d1d1f; /* Off-black */
-    --text-subtle: #86868b;
-    --card-bg: #ffffff;
-    --glass-bg: rgba(255, 255, 255, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.2);
-    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.15);
-    --accent: #000000;
-    
-    --dock-bg: rgba(245, 245, 247, 0.6);
-    --dock-border: rgba(0,0,0,0.05);
-    
-    --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    --transition-slow: 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-    --transition-fast: 0.3s ease;
+    --bg: #ffffff;
+    --fg: #111111;
+    --bgaccent: #f0f0f0;
+    --fgaccent: #333333;
 }
 
-body.dark-mode {
-    --bg-color: #000000; /* Deep black */
-    --text-color: #f5f5f7;
-    --text-subtle: #a1a1a6;
-    --card-bg: #1c1c1e;
-    --glass-bg: rgba(28, 28, 30, 0.7);
+/* Dark Mode Overrides */
+html[data-theme='dark'] {
+    --bg: #050505;
+    --fg: #f5f5f5;
+    --glass-bg: rgba(10, 10, 10, 0.7);
     --glass-border: rgba(255, 255, 255, 0.1);
-    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.5);
-    --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.6);
-    --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.8);
-    --accent: #ffffff;
-    
-    --dock-bg: rgba(44, 44, 46, 0.6);
-    --dock-border: rgba(255,255,255,0.1);
+    --accent: #cccccc;
+    --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    --card-hover: 0 12px 24px rgba(0, 0, 0, 0.8);
 }
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    font-family: var(--font-main);
-    font-size: 16px;
-    line-height: 1.5;
-    transition: background-color 0.5s ease, color 0.5s ease;
+    background-color: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-stack);
+    transition: background-color 0.4s ease, color 0.4s ease;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
 }
 
-a {
-    text-decoration: none;
-    color: inherit;
-    cursor: pointer;
-}
-
 /* =========================================
-   HEADER & NAVIGATION
+   HEADER & DOCK (#header-lx)
    ========================================= */
+/* Fixed top bar with liquid glass effect */
 #header-lx {
     position: fixed;
     top: 0;
@@ -75,294 +45,180 @@ a {
     align-items: center;
     padding: 0 40px;
     z-index: 1000;
-    pointer-events: none; /* Let clicks pass through empty space */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background: var(--glass-bg);
+    border-bottom: 1px solid var(--glass-border);
 }
 
-/* Logo */
+/* Logo container (.logo-holder) */
 .logo-holder {
-    pointer-events: auto;
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 40px;
     cursor: pointer;
-    transition: transform var(--transition-fast);
+    transition: transform 0.3s ease;
 }
+.logo-holder:hover { transform: scale(1.1); }
+.logo-img { width: 100%; height: auto; display: block; }
 
-.logo-holder:hover {
-    transform: scale(1.1);
-}
-
-.logo-img {
-    width: 100%;
-    height: auto;
-    object-fit: contain;
-}
-
-/* Dock (macOS Style) */
+/* The Dock (.dock-holder) - Centered navigation */
 .dock-holder {
-    pointer-events: auto;
     display: flex;
     align-items: center;
-    gap: 30px;
-    padding: 12px 30px;
-    background: var(--dock-bg);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-radius: 24px;
-    border: 1px solid var(--dock-border);
-    box-shadow: var(--shadow-sm);
-    transition: all var(--transition-fast);
+    gap: 20px;
+    height: var(--dock-height);
+    padding: 0 20px;
+    perspective: 1000px; /* For 3D scaling feel */
 }
 
+/* Dock items (spans) */
 .dock-holder span {
-    font-weight: 500;
     font-size: 14px;
-    letter-spacing: 0.5px;
-    color: var(--text-color);
-    transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    position: relative;
-    padding: 5px 10px;
-}
-
-.dock-holder:hover {
-    padding: 15px 35px; /* Slight expansion of container */
-    box-shadow: var(--shadow-md);
-}
-
-/* Mode Toggle */
-.mode-holder {
-    pointer-events: auto;
+    font-weight: 500;
     cursor: pointer;
-    font-size: 20px;
-    transition: transform var(--transition-fast);
+    padding: 8px 12px;
+    transition: color 0.2s;
+    will-change: transform;
+    opacity: 0.8;
 }
+.dock-holder span:hover { opacity: 1; }
 
-.mode-holder:hover {
-    transform: rotate(180deg) scale(1.1);
+/* Mode Toggle (.mode-holder) */
+.mode-holder {
+    font-size: 20px;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.3s ease;
 }
+.mode-holder:hover { transform: scale(1.2); }
 
 /* =========================================
-   MAIN CONTENT & LAYOUT
+   LAYOUT & TITLE SCREENS
    ========================================= */
+/* Main container (#main-lx) */
 #main-lx {
     min-height: 100vh;
-    padding-top: 0; /* Content handles its own spacing */
-}
-
-main {
     width: 100%;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
 }
 
-/* Hero Section (Titles) */
+/* Hero Section (.hero-holder) - Initial fullscreen title */
 .hero-holder {
     height: 100vh;
     width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    position: sticky;
+    position: sticky; /* Stays fixed while content scrolls over it */
     top: 0;
-    z-index: 0; /* Behind content */
-}
-
-.hero-text {
-    font-size: 8vw;
-    font-weight: 900;
-    letter-spacing: -0.05em;
-    text-transform: uppercase;
-    text-align: center;
-    color: var(--text-color);
+    z-index: 0;
+    overflow: hidden;
     will-change: opacity, transform;
 }
 
-/* Content Holder (Scrolls over Hero) */
-.content-holder, .cotent-holder {
+/* Big Title Text (.hero-text) */
+.hero-text {
+    font-size: 12vw;
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    text-transform: uppercase;
+    text-align: center;
+    margin: 0;
+    line-height: 0.9;
+}
+
+/* Content Container (.content-holder) */
+/* Pushed down to start after hero, scrolls over the sticky hero */
+.content-holder {
     position: relative;
     z-index: 10;
-    background: var(--bg-color); /* Needs BG to cover Hero */
-    padding: 100px 10vw 150px 10vw;
-    min-height: 80vh;
-    opacity: 0; /* Animated in via JS */
-    transform: translateY(50px);
-    transition: opacity 0.8s ease, transform 0.8s ease;
-    box-shadow: 0 -20px 40px rgba(0,0,0,0.02); /* Subtle separation shadow */
-}
-
-.content-holder.visible, .cotent-holder.visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-/* Text Styles */
-p {
-    font-size: 1.2rem;
-    color: var(--text-color);
-    max-width: 700px;
+    background: var(--bg); /* Covers the hero */
+    padding: 120px 20px 100px;
+    max-width: 1000px;
     margin: 0 auto;
-    font-weight: 400;
+    min-height: 60vh;
+    transition: background-color 0.4s ease;
 }
 
-a {
-    border-bottom: 1px solid var(--text-subtle);
-    transition: border-color 0.3s;
-}
-
-a:hover {
-    border-color: var(--accent);
+/* Text readable styles */
+.content-holder p {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: var(--accent);
+    margin-bottom: 1rem;
 }
 
 /* =========================================
-   PAGE SPECIFIC: FRAMEWORK (Cards)
+   PAGES: FUCKS & RADICALS (Cards)
    ========================================= */
+/* Book image setup */
 .book-holder {
     text-align: center;
     margin-bottom: 80px;
 }
+.book-img { max-width: 300px; height: auto; box-shadow: var(--card-shadow); }
+.book-text { font-weight: bold; margin-top: 20px; letter-spacing: 2px; }
 
-.book-img {
-    max-width: 250px;
-    height: auto;
-    box-shadow: var(--shadow-lg);
-    border-radius: 4px; /* Minimal book spine curve */
-    margin-bottom: 20px;
-}
-
-.book-text {
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    font-size: 0.9rem;
-    color: var(--text-subtle);
-}
-
+/* Grid for cards (.card-holder) */
 .card-holder {
     display: flex;
     flex-direction: column;
-    gap: 30px;
-    max-width: 1200px;
-    margin: 0 auto;
+    gap: 40px;
 }
 
 .card-row {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 30px;
 }
 
+/* Individual Card (.card) */
 .card {
-    background: var(--card-bg);
-    padding: 40px 30px;
-    border-radius: 16px;
+    background: var(--bg);
     border: 1px solid var(--glass-border);
-    box-shadow: var(--shadow-sm);
-    text-align: center;
-    transition: all 0.4s ease;
-    cursor: default;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
 }
 
 .card:hover {
-    transform: translateY(-10px);
-    box-shadow: var(--shadow-lg);
+    transform: translateY(-8px);
+    box-shadow: var(--card-hover);
 }
 
-.card-title {
-    font-size: 1.5rem;
-    font-weight: 800;
-    margin-bottom: 15px;
-    text-transform: uppercase;
-    letter-spacing: -0.02em;
-}
-
-.card-subtitle {
-    font-size: 1rem;
-    font-weight: 400;
-    color: var(--text-subtle);
-    line-height: 1.4;
-}
+.card-title { font-size: 1.5rem; margin-bottom: 10px; }
+.card-subtitle { font-size: 1rem; color: var(--accent); font-weight: 400; }
 
 /* =========================================
-   PAGE SPECIFIC: ARTICLES
+   PAGES: ARTICLES & ABOUT
    ========================================= */
-.article-list {
-    max-width: 800px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 50px;
-}
-
+/* Article List (.article-list) */
 .article {
-    padding: 30px;
-    border-radius: 12px;
-    transition: all 0.4s ease;
+    padding: 30px 0;
+    border-bottom: 1px solid var(--glass-border);
     cursor: pointer;
-    background: transparent;
+    transition: transform 0.3s ease, padding-left 0.3s ease;
 }
 
 .article:hover {
-    background: var(--card-bg);
-    box-shadow: var(--shadow-md);
-    transform: translateX(10px); /* Move slightly right */
+    transform: translateX(10px);
+    padding-left: 10px;
 }
 
-.article-title {
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 10px;
-    letter-spacing: -0.03em;
-}
+.article-title { font-size: 2rem; margin-bottom: 5px; }
+.article-subtitle { font-size: 1.1rem; color: var(--accent); margin-bottom: 8px; }
+.article-date { font-size: 0.9rem; opacity: 0.6; }
 
-.article-subtitle {
-    font-size: 1.2rem;
-    font-weight: 400;
-    color: var(--text-subtle);
-    margin-bottom: 15px;
-}
-
-.article-date {
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--text-subtle);
-    opacity: 0.6;
-}
-
-/* =========================================
-   PAGE SPECIFIC: ABOUT
-   ========================================= */
+/* About Grid (.grid-holder) */
 .grid-holder {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 60px;
+    gap: 50px;
     align-items: center;
-    max-width: 1100px;
-    margin: 0 auto;
 }
-
-.photo-img {
-    width: 100%;
-    max-width: 400px;
-    border-radius: 20px;
-    filter: grayscale(100%);
-    transition: filter 0.5s ease;
-}
-
-.photo-img:hover {
-    filter: grayscale(0%);
-}
-
-.text-holder p {
-    margin-left: 0;
-    font-size: 1.1rem;
-    line-height: 1.8;
-}
+.photo-img { width: 100%; border-radius: 4px; filter: grayscale(100%); }
 
 /* =========================================
-   FOOTER
+   FOOTER (#footer-lx)
    ========================================= */
 #footer-lx {
     position: fixed;
@@ -372,70 +228,22 @@ a:hover {
     padding: 20px 40px;
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
-    background: var(--bg-color); /* Opaque to hide scrolling content behind it */
-    z-index: 100;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--glass-border);
+    z-index: 1000;
     font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-}
-
-.footer-top {
-    color: var(--text-color);
-}
-
-.footer-bottom {
-    color: var(--text-subtle);
+    color: var(--accent);
 }
 
 /* =========================================
-   SPECIAL: HOME ANIMATION ELEMENTS
+   UTILITIES
    ========================================= */
-.letter-span {
-    display: inline-block;
-    transition: opacity 0.1s linear, transform 0.1s linear, margin 0.1s linear;
-}
+a { color: inherit; text-decoration: underline; text-decoration-thickness: 1px; }
 
-/* =========================================
-   RESPONSIVE
-   ========================================= */
-@media (max-width: 900px) {
-    .card-row {
-        grid-template-columns: 1fr;
-    }
-    
-    .grid-holder {
-        grid-template-columns: 1fr;
-    }
-    
-    .photo-holder {
-        text-align: center;
-    }
-    
-    .hero-text {
-        font-size: 12vw;
-    }
-}
-
-@media (max-width: 600px) {
-    #header-lx {
-        padding: 0 20px;
-    }
-    
-    .dock-holder {
-        gap: 15px;
-        padding: 10px 15px;
-    }
-    
-    .dock-holder span {
-        font-size: 11px;
-    }
-    
-    #footer-lx {
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-        position: relative; /* Unstick footer on mobile if content is long */
-        padding-bottom: 40px;
-    }
+@media (max-width: 768px) {
+    .grid-holder { grid-template-columns: 1fr; }
+    .hero-text { font-size: 18vw; }
+    #header-lx { padding: 0 20px; }
+    .dock-holder span { font-size: 11px; padding: 5px; }
 }
